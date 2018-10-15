@@ -76,3 +76,30 @@ class RemoteTmpdir:
             return True
         except Exception:
             return False
+
+    def run_check(self, cmd, *args, **kwargs):
+        """Upload and execute file.
+
+        Convenience function for uploading executable file and then executing
+        command using run_check() method of the shell of RemoteTmpdir object.
+
+        Example:
+
+            tmpdir.run_check('/local/script --foobar')
+
+        to upload /local/script to remote tmpdir, and then execute it from
+        there with '--foobar' argument.
+
+        Arguments:
+            cmd: command to execute, with command specified locally
+            *args: positional arguments to CommandProtcol.run_check()
+            **kwargs: keyword arguments to CommandProtcol.run_check()
+
+        """
+        cmdv = cmd.split(maxsplit=1)
+        localpath = cmdv[0]
+        filename = os.path.basename(localpath)
+        remotepath = self.path + filename
+        cmdv[0] = remotepath
+        self.put(localpath)
+        return self.shell.run_check(' '.join(cmdv), *args, **kwargs)
