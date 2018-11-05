@@ -14,11 +14,11 @@ class RemoteTmpdir:
 
     See examples/remote_tmpdir.
 
-    Args:
-        shell (Driver): driver instance implementing CommandProtocol
-        basedir (str): directory relative to pytest root
-        filetransfer (Driver): driver instance implementing
-            FileTransferProtocol (defaults to shell)
+    Arguments:
+        shell: Driver instance implementing CommandProtocol
+        basedir: directory relative to pytest root
+        filetransfer: Driver instance implementing FileTransferProtocol
+            (defaults to shell)
     """
     def __init__(self, shell, basedir=None, filetransfer=None):
         stdout = shell.run_check('mktemp -d')
@@ -33,14 +33,13 @@ class RemoteTmpdir:
             raise Exception('RemoteTmpdir: {} is not a directory'.format(
                 self.basedir))
 
-    """
-    Copy a file or contents of directory to the created tmpdir.
-
-    Args:
-        items (list):  files or directories to copy (does not create sub
-            directories, but copies all files)
-    """
     def put(self, *items):
+        """Copy a file or contents of directory to the created tmpdir.
+
+        Arguments:
+            *items: list of files or directories to copy (does not create sub
+                directories, but copies all files)
+        """
         for path in items:
             # resolve relative paths
             if not os.path.isabs(path) and self.basedir is not None:
@@ -58,13 +57,19 @@ class RemoteTmpdir:
                         self.filetransfer.put(localpath, remotepath)
 
     def get(self, *files, localdir=None):
+        """Download files from the remote tmpdir.
+
+        Arguments:
+            *files: list of files to download
+            localdir: directory to download files to
+        """
         for path in files:
             remotepath = self.path + str(path)
             assert localdir or self.basedir, 'RemoteTmpdir does not have basedir set, use localdir= in get'
             self.filetransfer.get(remotepath, localdir or self.basedir)
 
-    """Remove the directory again on target."""
     def cleanup(self):
+        """Remove the directory again on target."""
         # usual teardown code, thus failure ignored but returned
         try:
             self.shell.run_check('rm -r {}'.format(self.path))
